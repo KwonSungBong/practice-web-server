@@ -1,50 +1,27 @@
 import {checkHttpStatus, parseJSON} from '../utils'
-import {LOGIN_USER_REQUEST, LOGIN_USER_FAILURE, LOGIN_USER_SUCCESS, LOGOUT_USER
-        ,JOIN_USER_REQUEST, JOIN_USER_FAILURE, JOIN_USER_SUCCESS} from '../constants'
+import {SIGNIN_USER_REQUEST, SIGNIN_USER_FAILURE, SIGNIN_USER_SUCCESS, SIGNOUT_USER,
+        SIGNUP_USER_REQUEST, SIGNUP_USER_FAILURE, SIGNUP_USER_SUCCESS,
+        DUPLICATE_USER_EMAIL_REQUEST, DUPLICATE_USER_EMAIL_FAILURE, DUPLICATE_USER_EMAIL_SUCCESS,
+        DUPLICATE_USER_NAME_REQUEST, DUPLICATE_USER_NAME_FAILURE, DUPLICATE_USER_NAME_SUCCESS} from '../constants'
 import {pushState} from 'redux-router'
 
-export function loginUserSuccess(token){
+export function signInUserSuccess(token, user){
     localStorage.setItem('token',token)
     return {
-        type:LOGIN_USER_SUCCESS,
+        type:SIGNIN_USER_SUCCESS,
         payload:{
-            token:token
+            token: token,
+            idx: user._idx_,
+            email: user._email_,
+            name: user._name_
         }
     }
 }
 
-export function loginUserFailure(error){
+export function signInUserFailure(error){
     localStorage.removeItem('token')
     return {
-        type:LOGIN_USER_FAILURE,
-        payload:{
-            status:error.response.status,
-            statusText:error.response.statusText
-        }
-    }
-}
-export function loginUserRequest(){
-    return {
-        type:LOGIN_USER_REQUEST
-    }
-}
-
-export function logout(){
-    localStorage.removeItem('token')
-    return {
-        type:LOGOUT_USER
-    }
-}
-
-export function joinUserSuccess(){
-    return {
-        type:JOIN_USER_SUCCESS
-    }
-}
-
-export function joinUserFailure(error){
-    return {
-        type:JOIN_USER_FAILURE,
+        type:SIGNIN_USER_FAILURE,
         payload:{
             status:error.response.status,
             statusText:error.response.statusText
@@ -52,39 +29,116 @@ export function joinUserFailure(error){
     }
 }
 
-export function joinUserRequest(){
+export function signInUserRequest(){
     return {
-        type:JOIN_USER_REQUEST
+        type:SIGNIN_USER_REQUEST
     }
 }
 
-export function logoutAndRedirect(){
+export function signOut(){
+    localStorage.removeItem('token')
+    return {
+        type:SIGNOUT_USER
+    }
+}
+
+export function signUpUserSuccess(){
+    return {
+        type:SIGNUP_USER_SUCCESS
+    }
+}
+
+export function signUpUserFailure(error){
+    return {
+        type:SIGNUP_USER_FAILURE,
+        payload:{
+            status:error.response.status,
+            statusText:error.response.statusText
+        }
+    }
+}
+
+export function signUpUserRequest(){
+    return {
+        type:SIGNUP_USER_REQUEST
+    }
+}
+
+export function signOutAndRedirect(){
     return (dispatch,state)=>{
-        dispatch(logout())
-        dispatch(pushState(null, '/login'))
+        dispatch(signOut())
+        dispatch(pushState(null, '/signIn'))
     }
 }
 
-export function loginUser(email, password, redirect="/"){
+export function duplicateUserEmailSuccess(isDuplicateEmail, stateText){
+    return {
+        type:DUPLICATE_USER_EMAIL_SUCCESS,
+        payload:{
+            'isDuplicateEmail':isDuplicateEmail,
+            'stateText':stateText
+        }
+    }
+}
+
+export function duplicateUserEmailFailure(){
+    return {
+        type:DUPLICATE_USER_EMAIL_FAILURE
+    }
+}
+
+export function duplicateUserEmailRequest(){
+    return {
+        type:DUPLICATE_USER_EMAIL_REQUEST
+    }
+}
+
+export function duplicateUserNameSuccess(isDuplicateName, stateText){
+    return {
+        type:DUPLICATE_USER_NAME_SUCCESS,
+        payload:{
+            'isDuplicateName':isDuplicateName,
+            'stateText':stateText
+        }
+    }
+}
+
+export function duplicateUserNameFailure(){
+    return {
+        type:DUPLICATE_USER_NAME_FAILURE
+    }
+}
+
+export function duplicateUserNameRequest(){
+    return {
+        type:DUPLICATE_USER_NAME_REQUEST
+    }
+}
+
+
+export function signInUser(email, password, redirect="/"){
     return function(dispatch){
-        dispatch(loginUserRequest())
-        return fetch('http://localhost:3000/auth/login/',{
+        dispatch(signInUserRequest())
+        return fetch('http://localhost:3001/signIn',{
             method:'post',
-            credentials:'include',
             headers:{
                 'Accept':'application/json',
                 'Content-Type':'application/json'
             },
-            body:JSON.stringify({'email':email,'password':password})
+            body:JSON.stringify({
+                'userEmail':email,
+                'userPassword':password
+            }),
+            mode: 'cors'
         })
         .then(checkHttpStatus)
         .then(parseJSON)
         .then(response=>{
             try{
-                dispatch(loginUserSuccess(response.token))
+                dispatch(signInUserSuccess(response.token, response.user))
                 dispatch(pushState(null, redirect))
             }catch(e){
-                dispatch(loginUserFailure({
+                dispatch(signInUserFailure({
                     response:{
                         status:403,
                         statusText:'Invalid token'
@@ -93,15 +147,15 @@ export function loginUser(email, password, redirect="/"){
             }
         })
         .catch(error=>{
-            dispatch(loginUserFailure(error))
+            dispatch(signInUserFailure(error))
         })
     }
 }
 
-export function joinUser(email, password, name, redirect='/'){
+export function signUpUser(email, password, name, redirect='/'){
     return function(dispatch){
-        dispatch(joinUserRequest())
-        return fetch('http://localhost:3000/auth/join/',{
+        dispatch(signUpUserRequest())
+        return fetch('http://localhost:3001/signUp/',{
             method:'post',
             credentials:'include',
             headers:{
@@ -114,10 +168,10 @@ export function joinUser(email, password, name, redirect='/'){
         .then(parseJSON)
         .then(response=>{
             try{
-                dispatch(joinUserSuccess())
+                dispatch(signUpUserSuccess())
                 dispatch(pushState(null,redirect))
             }catch(e){
-                dispatch(joinUserFailure({
+                dispatch(signUpUserFailure({
                     response:{
                         status:403,
                         statusText:'Invalid token'
@@ -126,7 +180,61 @@ export function joinUser(email, password, name, redirect='/'){
             }
         })
         .catch(error=>{
-            dispatch(joinUserFailure())
+            dispatch(signUpUserFailure())
         })
     }
 }
+
+export function duplicateUserEmail(email){
+    return function(dispatch){
+        dispatch(duplicateUserEmailRequest())
+        return fetch('http://localhost:3001/duplicate/user/email/'+email,{
+            method:'get',
+            headers:{
+                'Accept':'application/json',
+                'Content-Type':'application/json'
+            },
+            mode: 'cors'
+        })
+        .then(checkHttpStatus)
+        .then(parseJSON)
+        .then(response=>{
+            try{
+                dispatch(duplicateUserEmailSuccess(response.duplicateState, response.message))
+            }catch(e){
+                dispatch(duplicateUserEmailFailure())
+            }
+        })
+        .catch(error=>{
+            dispatch(duplicateUserEmailFailure())
+        })
+    }
+}
+
+
+export function duplicateUserName(name){
+    return function(dispatch){
+        dispatch(duplicateUserNameRequest())
+        return fetch('http://localhost:3001/duplicate/user/name/'+name,{
+            method:'get',
+            headers:{
+                'Accept':'application/json',
+                'Content-Type':'application/json'
+            },
+            mode: 'cors'
+        })
+            .then(checkHttpStatus)
+            .then(parseJSON)
+            .then(response=>{
+                try{
+                    dispatch(duplicateUserNameSuccess(response.duplicateState, response.message))
+                }catch(e){
+                    dispatch(duplicateUserEmailFailure())
+                }
+            })
+            .catch(error=>{
+                dispatch(duplicateUserNameFailure())
+            })
+    }
+}
+

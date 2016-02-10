@@ -1,11 +1,13 @@
 import {combineReducers} from 'redux'
 import {routerStateReducer} from 'redux-router'
 import auth from './auth'
-import join from './join'
+import duplicate from './duplicate'
+import signUp from './signUp'
 
 
 export default combineReducers({
     auth,
-    join,
+    duplicate,
+    signUp,
     router: routerStateReducer
 })

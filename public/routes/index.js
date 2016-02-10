@@ -1,19 +1,27 @@
 import React from 'react'
 import {Route, IndexRoute} from 'react-router'
 import App from '../containers/App'
-import Login from '../views/pages/Login'
-import Join from '../views/pages/Join'
+import SignIn from '../views/pages/SignIn'
+import SignUp from '../views/pages/SignUp'
+import EditProfile from '../views/pages/EditProfile'
 import Home from '../views/pages/Home'
+import Boards from '../views/subPages/Boards'
+import Board from '../views/subPages/Board'
+import TalkRooms from '../views/subPages/TalkRooms'
 import {requireAuthentication} from '../components/AuthenticatedComponent'
 
 export default (
     <Route path='/' component={App}>
-        <IndexRoute component={requireAuthentication(Home)}/>
-        <Route path="login" component={Login}/>
-        <Route path="join" component={Join}/>
+        <IndexRoute component={SignIn}/>
+        <Route path="signIn" component={SignIn}/>
+        <Route path="signUp" component={SignUp}/>
+        <Route path="editProfile" component={requireAuthentication(EditProfile)}/>
         <Route path="home" component={requireAuthentication(Home)}>
-            <Route path="board" component={Board}/>
-            <Route path="talk" component={Talk}/>
+            <Route path="boards" component={Boards}>
+                <Route path="board" component={Board}/>
+                <Route path="board/:idx" component={Board}/>
+            </Route>
+            <Route path="talkRooms" component={TalkRooms}/>
         </Route>
     </Route>
 )

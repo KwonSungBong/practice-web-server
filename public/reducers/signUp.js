@@ -1,27 +1,27 @@
 import {createReducer} from '../utils'
-import {JOIN_USER_REQUEST, JOIN_USER_SUCCESS, JOIN_USER_FAILURE} from '../constants'
+import {SIGNUP_USER_REQUEST, SIGNUP_USER_SUCCESS, SIGNUP_USER_FAILURE} from '../constants'
 
 const initialState = {
-    isJoining:false,
-    statusText:null
+    'isSignUping':false,
+    'statusText':null
 }
 
 export default createReducer(initialState, {
-    [JOIN_USER_REQUEST]:(state,payload)=>{
+    [SIGNUP_USER_REQUEST]:(state,payload)=>{
         return Object.assign({},state,{
-            'isJoining':true,
+            'isSignUping':true,
             'statusText':null
         })
     },
-    [JOIN_USER_SUCCESS]:(state,payload)=>{
+    [SIGNUP_USER_SUCCESS]:(state,payload)=>{
         return Object.assign({},state,{
-            'isJoining':false,
+            'isSignUping':false,
             'statusText':'성공했쩡'
         })
     },
-    [JOIN_USER_FAILURE]:(state,payload)=>{
+    [SIGNUP_USER_FAILURE]:(state,payload)=>{
         return Object.assign({},state,{
-            'isJoining':false,
+            'isSignUping':false,
             'stateusText':`Join Error: ${payload.status} ${payload.statusText}`
         })
     }
