@@ -31111,6 +31111,10 @@
 	exports.getBoardsFailure = getBoardsFailure;
 	exports.getBoardsRequest = getBoardsRequest;
 	exports.getBoards = getBoards;
+	exports.getBoardSuccess = getBoardSuccess;
+	exports.getBoardFailure = getBoardFailure;
+	exports.getBoardRequest = getBoardRequest;
+	exports.getBoard = getBoard;
 
 	var _utils = __webpack_require__(425);
 
@@ -31382,6 +31386,51 @@
 	    };
 	}
 
+	function getBoardSuccess(board) {
+	    return {
+	        type: _constants.GET_BOARD_SUCCESS,
+	        payload: {
+	            board: board
+	        }
+	    };
+	}
+
+	function getBoardFailure() {
+	    return {
+	        type: _constants.GET_BOARD_FAILURE
+	    };
+	}
+
+	function getBoardRequest() {
+	    return {
+	        type: _constants.GET_BOARD_REQUEST
+	    };
+	}
+
+	function getBoard(idx) {
+	    var token = localStorage.getItem('token');
+	    return function (dispatch) {
+	        dispatch(getBoardRequest());
+	        return fetch('http://localhost:3001/board/' + idx, {
+	            method: 'get',
+	            headers: {
+	                'Accept': 'application/json',
+	                'Content-Type': 'application/json',
+	                'Authorization': 'Bearer ' + token
+	            },
+	            mode: 'cors'
+	        }).then(_utils.checkHttpStatus).then(_utils.parseJSON).then(function (response) {
+	            try {
+	                dispatch(getBoardSuccess(response.board));
+	            } catch (e) {
+	                dispatch(getBoardFailure());
+	            }
+	        })['catch'](function (error) {
+	            dispatch(getBoardFailure());
+	        });
+	    };
+	}
+
 /***/ },
 /* 425 */
 /***/ function(module, exports) {
@@ -31443,7 +31492,7 @@
 
 	var _utils = __webpack_require__(425);
 
-	exports['default'] = (0, _utils.createConstants)('SIGNIN_USER_REQUEST', 'SIGNIN_USER_FAILURE', 'SIGNIN_USER_SUCCESS', 'SIGNOUT_USER', 'SIGNUP_USER_REQUEST', 'SIGNUP_USER_FAILURE', 'SIGNUP_USER_SUCCESS', 'DUPLICATE_USER_EMAIL_REQUEST', 'DUPLICATE_USER_EMAIL_FAILURE', 'DUPLICATE_USER_EMAIL_SUCCESS', 'DUPLICATE_USER_NAME_REQUEST', 'DUPLICATE_USER_NAME_FAILURE', 'DUPLICATE_USER_NAME_SUCCESS', 'GET_BOARDS_REQUEST', 'GET_BOARDS_FAILURE', 'GET_BOARDS_SUCCESS');
+	exports['default'] = (0, _utils.createConstants)('SIGNIN_USER_REQUEST', 'SIGNIN_USER_FAILURE', 'SIGNIN_USER_SUCCESS', 'SIGNOUT_USER', 'SIGNUP_USER_REQUEST', 'SIGNUP_USER_FAILURE', 'SIGNUP_USER_SUCCESS', 'DUPLICATE_USER_EMAIL_REQUEST', 'DUPLICATE_USER_EMAIL_FAILURE', 'DUPLICATE_USER_EMAIL_SUCCESS', 'DUPLICATE_USER_NAME_REQUEST', 'DUPLICATE_USER_NAME_FAILURE', 'DUPLICATE_USER_NAME_SUCCESS', 'GET_BOARDS_REQUEST', 'GET_BOARDS_FAILURE', 'GET_BOARDS_SUCCESS', 'GET_BOARD_REQUEST', 'GET_BOARD_FAILURE', 'GET_BOARD_SUCCESS', 'GET_POST_REQUEST', 'GET_POST_FAILURE', 'GET_POST_SUCCESS');
 	module.exports = exports['default'];
 
 /***/ },
@@ -48801,13 +48850,19 @@
 	    }
 
 	    _createClass(Home, [{
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-	            this.props.actions.getBoards();
+	        key: 'componentWillMount',
+	        value: function componentWillMount() {
+	            if (this.props.boards.length == 0) {
+	                this.props.actions.getBoards();
+	            }
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
+	            if (this.props.boards.length > 0) {
+	                this.props.actions.getBoard(this.props.boards[0]);
+	            }
+
 	            return _react2['default'].createElement(
 	                'div',
 	                null,
@@ -48828,7 +48883,10 @@
 	exports['default'] = Home;
 
 	var mapStateToProps = function mapStateToProps(state) {
-	    return {};
+	    return {
+	        isBoardLoading: state.home.isBoardLoading,
+	        boards: state.home.boards
+	    };
 	};
 
 	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
@@ -49239,15 +49297,15 @@
 
 	var _signUp2 = _interopRequireDefault(_signUp);
 
-	var _boards = __webpack_require__(693);
+	var _home = __webpack_require__(693);
 
-	var _boards2 = _interopRequireDefault(_boards);
+	var _home2 = _interopRequireDefault(_home);
 
 	exports['default'] = (0, _redux.combineReducers)({
 	    auth: _auth2['default'],
 	    duplicate: _duplicate2['default'],
 	    signUp: _signUp2['default'],
-	    boards: _boards2['default'],
+	    home: _home2['default'],
 	    router: _reduxRouter.routerStateReducer
 	});
 	module.exports = exports['default'];
@@ -49428,19 +49486,14 @@
 	var _normalizr = __webpack_require__(694);
 
 	var initialState = {
-	    'isLoading': false,
+	    'isBoardLoading': false,
+	    'entities': null,
 	    'boards': []
 	};
 
-	var boardSchema = new _normalizr.Schema('boards', { idAttribute: 'idx' });
-	var menuSchema = new _normalizr.Schema('menus');
-
-	/*boardSchema.define({
-	    menus:arrayOf(menuSchema)
-	})*/
-
-	/*const post = new Schema('posts',{idAttribute:'idx'})
-	 const reply = new Schema('replies',{idAttribute:'idx'})*/
+	var boardSchema = new _normalizr.Schema('boards', { idAttribute: '_idx_' });
+	var postSchema = new _normalizr.Schema('posts', { idAttribute: '_idx_' });
+	var replySchema = new _normalizr.Schema('replies', { idAttribute: '_idx_' });
 
 	/*board.define({
 	 board:arrayOf(board)
@@ -49451,20 +49504,45 @@
 
 	exports['default'] = (0, _utils.createReducer)(initialState, (_createReducer = {}, _defineProperty(_createReducer, _constants.GET_BOARDS_REQUEST, function (state, payload) {
 	    return Object.assign({}, state, {
-	        'isLoading': true
+	        'isBoardLoading': true
 	    });
 	}), _defineProperty(_createReducer, _constants.GET_BOARDS_FAILURE, function (state, payload) {
 	    return Object.assign({}, state, {
-	        'isLoading': false,
+	        'isBoardLoading': false,
 	        'boards': []
 	    });
 	}), _defineProperty(_createReducer, _constants.GET_BOARDS_SUCCESS, function (state, payload) {
-	    console.log(payload.boards);
-	    console.log((0, _normalizr.normalize)(payload.boards, (0, _normalizr.arrayOf)(boardSchema)));
+	    var response = (0, _normalizr.normalize)(payload.boards, (0, _normalizr.arrayOf)(boardSchema));
 
 	    return Object.assign({}, state, {
-	        'isLoading': false,
-	        'boards': []
+	        'isBoardLoading': false,
+	        'entities': response.entities,
+	        'boards': response.result
+	    });
+	}), _defineProperty(_createReducer, _constants.GET_BOARD_REQUEST, function (state, payload) {
+	    return Object.assign({}, state, {
+	        'isLoading': true
+	    });
+	}), _defineProperty(_createReducer, _constants.GET_BOARD_FAILURE, function (state, payload) {
+	    return Object.assign({}, state, {
+	        'isLoading': false
+	    });
+	}), _defineProperty(_createReducer, _constants.GET_BOARD_SUCCESS, function (state, payload) {
+	    console.log(payload);
+	    return Object.assign({}, state, {
+	        'isLoading': false
+	    });
+	}), _defineProperty(_createReducer, _constants.GET_POST_REQUEST, function (state, payload) {
+	    return Object.assign({}, state, {
+	        'isLoading': true
+	    });
+	}), _defineProperty(_createReducer, _constants.GET_POST_FAILURE, function (state, payload) {
+	    return Object.assign({}, state, {
+	        'isLoading': false
+	    });
+	}), _defineProperty(_createReducer, _constants.GET_POST_SUCCESS, function (state, payload) {
+	    return Object.assign({}, state, {
+	        'isLoading': false
 	    });
 	}), _createReducer));
 	module.exports = exports['default'];

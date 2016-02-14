@@ -3,7 +3,9 @@ import {SIGNIN_USER_REQUEST, SIGNIN_USER_FAILURE, SIGNIN_USER_SUCCESS, SIGNOUT_U
         SIGNUP_USER_REQUEST, SIGNUP_USER_FAILURE, SIGNUP_USER_SUCCESS,
         DUPLICATE_USER_EMAIL_REQUEST, DUPLICATE_USER_EMAIL_FAILURE, DUPLICATE_USER_EMAIL_SUCCESS,
         DUPLICATE_USER_NAME_REQUEST, DUPLICATE_USER_NAME_FAILURE, DUPLICATE_USER_NAME_SUCCESS,
-        GET_BOARDS_REQUEST, GET_BOARDS_FAILURE, GET_BOARDS_SUCCESS} from '../constants'
+        GET_BOARDS_REQUEST, GET_BOARDS_FAILURE, GET_BOARDS_SUCCESS,
+        GET_BOARD_REQUEST, GET_BOARD_FAILURE, GET_BOARD_SUCCESS,
+        GET_POST_REQUEST, GET_POST_FAILURE, GET_POST_SUCCESS} from '../constants'
 import {pushState} from 'redux-router'
 
 export function signInUserSuccess(token, user){
@@ -284,6 +286,55 @@ export function getBoards(){
         })
         .catch(error=>{
             dispatch(getBoardsFailure())
+        })
+    }
+}
+
+export function getBoardSuccess(board){
+    return {
+        type:GET_BOARD_SUCCESS,
+        payload:{
+            board:board
+        }
+    }
+}
+
+export function getBoardFailure(){
+    return {
+        type:GET_BOARD_FAILURE
+    }
+}
+
+export function getBoardRequest(){
+    return {
+        type:GET_BOARD_REQUEST
+    }
+}
+
+export function getBoard(idx){
+    const token = localStorage.getItem('token')
+    return function(dispatch){
+        dispatch(getBoardRequest())
+        return fetch('http://localhost:3001/board/'+idx,{
+            method:'get',
+            headers:{
+                'Accept':'application/json',
+                'Content-Type':'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            mode: 'cors'
+        })
+        .then(checkHttpStatus)
+        .then(parseJSON)
+        .then(response=>{
+            try{
+                dispatch(getBoardSuccess(response.board))
+            }catch(e){
+                dispatch(getBoardFailure())
+            }
+        })
+        .catch(error=>{
+            dispatch(getBoardFailure())
         })
     }
 }

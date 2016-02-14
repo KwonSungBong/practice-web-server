@@ -14,11 +14,17 @@ export default class Home extends Component{
         }
     }
 
-    componentDidMount(){
-        this.props.actions.getBoards()
+    componentWillMount(){
+        if(this.props.boards.length == 0){
+            this.props.actions.getBoards()
+        }
     }
 
     render(){
+        if(this.props.boards.length > 0){
+            this.props.actions.getBoard(this.props.boards[0])
+        }
+
         return (
             <div>
                 <span>ÇÑ±Û</span>
@@ -30,6 +36,8 @@ export default class Home extends Component{
 }
 
 const mapStateToProps=(state)=>({
+    isBoardLoading:state.home.isBoardLoading,
+    boards:state.home.boards
 })
 
 const mapDispatchToProps=(dispatch)=>({
