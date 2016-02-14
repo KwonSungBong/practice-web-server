@@ -61,7 +61,7 @@ export default class SignUp extends Component{
                     <Input type="text" label="비밀번호" value={this.state.password} onChange={this.handlePasswordChange.bind(this)} placeholder="password" />
 
                     <Button bsStyle="primary" disabled={isDisabledSignUp} onClick={this.signUp.bind(this)} >signUp</Button>
-                    <Button bsStyle="success"><Link to='signIn'>취소</Link></Button>
+                    <Link to='signIn'><Button bsStyle="success">cancel</Button></Link>
                 </div>
             </div>
         )

@@ -7,7 +7,6 @@ import EditProfile from '../views/pages/EditProfile'
 import Home from '../views/pages/Home'
 import Boards from '../views/subPages/Boards'
 import Board from '../views/subPages/Board'
-import TalkRooms from '../views/subPages/TalkRooms'
 import {requireAuthentication} from '../components/AuthenticatedComponent'
 
 export default (
@@ -17,11 +16,8 @@ export default (
         <Route path="signUp" component={SignUp}/>
         <Route path="editProfile" component={requireAuthentication(EditProfile)}/>
         <Route path="home" component={requireAuthentication(Home)}>
-            <Route path="boards" component={Boards}>
-                <Route path="board" component={Board}/>
-                <Route path="board/:idx" component={Board}/>
-            </Route>
-            <Route path="talkRooms" component={TalkRooms}/>
+            <Route path="board" component={Board}/>
+            <Route path="board/:idx" component={Board}/>
         </Route>
     </Route>
 )

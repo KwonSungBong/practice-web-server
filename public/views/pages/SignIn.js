@@ -34,7 +34,7 @@ export default class SignIn extends Component{
                     <Input type="text" label="이메일" value={this.state.email} onChange={this.handleEmailChange.bind(this)} placeholder="email" />
                     <Input type="text" label="비밀번호" value={this.state.password} onChange={this.handlePasswordChange.bind(this)} placeholder="password" />
                     <Button bsStyle="primary" disabled={this.props.isAuthenticating} onClick={this.signIn.bind(this)}>signIn</Button>
-                    <Button bsStyle="success"><Link to="signUp">signUp</Link></Button>
+                    <Link to="signUp"><Button bsStyle="success">signUp</Button></Link>
                 </div>
             </div>
         )
