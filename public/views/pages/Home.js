@@ -15,19 +15,15 @@ export default class Home extends Component{
     }
 
     componentWillMount(){
-        if(this.props.boards.length == 0){
-            this.props.actions.getBoards()
-        }
+        this.props.actions.getBoards()
+        this.props.actions.getBoard(1)
     }
 
     render(){
-        if(this.props.boards.length > 0){
-            this.props.actions.getBoard(this.props.boards[0])
-        }
 
         return (
             <div>
-                <span>ÇÑ±Û</span>
+                <span>í™ˆ</span>
                 <Header/>
                 <Content/>
             </div>

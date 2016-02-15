@@ -4,6 +4,7 @@ import {SIGNIN_USER_REQUEST, SIGNIN_USER_FAILURE, SIGNIN_USER_SUCCESS, SIGNOUT_U
         DUPLICATE_USER_EMAIL_REQUEST, DUPLICATE_USER_EMAIL_FAILURE, DUPLICATE_USER_EMAIL_SUCCESS,
         DUPLICATE_USER_NAME_REQUEST, DUPLICATE_USER_NAME_FAILURE, DUPLICATE_USER_NAME_SUCCESS,
         GET_BOARDS_REQUEST, GET_BOARDS_FAILURE, GET_BOARDS_SUCCESS,
+        SELECT_BOARD,
         GET_BOARD_REQUEST, GET_BOARD_FAILURE, GET_BOARD_SUCCESS,
         GET_POST_REQUEST, GET_POST_FAILURE, GET_POST_SUCCESS} from '../constants'
 import {pushState} from 'redux-router'
@@ -287,6 +288,15 @@ export function getBoards(){
         .catch(error=>{
             dispatch(getBoardsFailure())
         })
+    }
+}
+
+export function selectBoard(idx){
+    return {
+        type:SELECT_BOARD,
+        payload:{
+            idx:idx
+        }
     }
 }
 
